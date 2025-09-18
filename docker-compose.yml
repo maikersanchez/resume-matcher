@@ -4,7 +4,7 @@ services:
       context: ./apps/backend
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "8090:8000"
     volumes:
       - ./apps/backend:/app
     environment:
@@ -27,7 +27,7 @@ services:
       - /app/node_modules
       - /app/.next
     environment:
-      - NEXT_PUBLIC_API_URL=http://backend:8000
+      - NEXT_PUBLIC_API_URL=http://backend:8090
     depends_on:
       - backend
     networks:
