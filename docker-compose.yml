@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   resume-matcher:
-    build: .
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
     ports:
       - "8090:8000"
     environment:
@@ -18,7 +20,7 @@ services:
       - resume_uploads:/app/uploads
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
       interval: 30s
       timeout: 10s
       retries: 3
