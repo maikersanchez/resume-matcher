@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  resume-matcher:
+    build: .
+    ports:
+      - "8090:8000"
+    environment:
+      - NODE_ENV=production
+      - PORT=8090
+      - HOST=0.0.0.0
+      - DATABASE_URL=sqlite:///./data/resume_matcher.db
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://ollama:11434}
+    volumes:
+      - resume_data:/app/data
+      - resume_uploads:/app/uploads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  resume_data:
+  resume_uploads:
