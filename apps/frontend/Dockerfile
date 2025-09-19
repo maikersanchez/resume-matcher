@@ -8,7 +8,7 @@ RUN ls
 # Install dependencies
 RUN npm ci
 # Copy the rest of the frontend application code
-COPY . .
+COPY . /app
 
 # Set environment variables
 ENV NODE_ENV=development
