@@ -1,21 +1,22 @@
 FROM node:18-alpine
-WORKDIR /app
-# Copy package.json and package-lock.json
-COPY package.json package-lock.json* ./
 
-RUN ls
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
-# Copy the rest of the frontend application code
-COPY . /app
+RUN npm install
+
+# Copy source code
+COPY . .
 
 # Set environment variables
 ENV NODE_ENV=development
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Expose the port the app runs on
+# Expose port
 EXPOSE 3000
 
-# Command to run the application in development mode
+# Start application
 CMD ["npm", "run", "dev"]
