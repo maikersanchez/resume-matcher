@@ -1,22 +1,8 @@
+# OPCIÓN A: Si package.json está en la raíz del repositorio
 FROM node:18-alpine
-
 WORKDIR /app
-
-# Copy package files
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install
-
-# Copy source code
 COPY . .
-
-# Set environment variables
-ENV NODE_ENV=development
-ENV NEXT_TELEMETRY_DISABLED=1
-
-# Expose port
 EXPOSE 3000
-
-# Start application
 CMD ["npm", "run", "dev"]
