@@ -19,7 +19,7 @@ RUN echo "--- PASO 3: DESPUÉS DE COPIAR package.json ---" && ls -la
 
 # Instalar las dependencias con la última versión
 # Esto solo se ejecutará si package.json fue copiado.
-RUN npm install --latest
+#RUN npm install --latest
 
 # Paso de depuración: Comprobar los archivos después de la instalación de dependencias.
 # Deberías ver la carpeta node_modules aquí.
