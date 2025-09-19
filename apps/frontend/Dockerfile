@@ -1,9 +1,18 @@
-# OPCIÓN C: Si usas el build context correcto en Coolify
-# (Build Context: ./frontend en Coolify)
 FROM node:18-alpine
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
+# Copy package.json and package-lock.json
+COPY package.json package-lock.json* ./
+# Install dependencies
+RUN npm ci
+# Copy the rest of the frontend application code
 COPY . .
+
+# Set environment variables
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Expose the port the app runs on
 EXPOSE 3000
+
+# Command to run the application in development mode
 CMD ["npm", "run", "dev"]
