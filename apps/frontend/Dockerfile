@@ -1,18 +1,28 @@
 FROM node:18-alpine
 
+# Install curl for health checks
+RUN apk add --no-cache curl
+
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package.json package-lock.json* ./
+# Copy package files (with debugging)
+COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm ci --only=production
 
-# Copy the rest of the frontend application code
+# Copy source code
 COPY . .
 
-# Expose the port the app runs on
+# Build the application
+RUN npm run build
+
+# Expose port
 EXPOSE 3000
 
-# Command to run the application in development mode
-CMD ["npm", "run", "dev"] 
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:3000 || exit 1
+
+# Start the application
+CMD ["npm", "start"]
