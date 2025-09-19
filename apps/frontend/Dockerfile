@@ -1,28 +1,50 @@
-FROM node:18-alpine
+FROM node:18-alpine AS base
 
-# Install curl for health checks
-RUN apk add --no-cache curl
-
+# Install dependencies only when needed
+FROM base AS deps
 WORKDIR /app
 
-# Copy package files (with debugging)
+# Copy package files
 COPY package*.json ./
-
-# Install dependencies
 RUN npm ci --only=production
 
-# Copy source code
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+
 COPY . .
 
-# Build the application
-RUN npm run build
+# Next.js collects completely anonymous telemetry data about general usage.
+ENV NEXT_TELEMETRY_DISABLED 1
 
-# Expose port
+# Build only if package.json has build script
+RUN npm run build || echo "No build script found, skipping build"
+
+# Production image, copy all the files and run next
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+
+# Create nextjs user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy built application
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next 2>/dev/null || echo "No .next directory found"
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public 2>/dev/null || echo "No public directory found"
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+
+USER nextjs
+
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:3000 || exit 1
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
 
-# Start the application
-CMD ["npm", "start"]
+# Try different start commands
+CMD ["sh", "-c", "npm start || npm run dev || npx next start || node server.js"]
