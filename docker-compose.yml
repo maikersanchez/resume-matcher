@@ -44,7 +44,6 @@ services:
       - backend
     networks:
       - resume-matcher-network
-    restart: unless-stopped
 
 volumes:
   resume_data:
