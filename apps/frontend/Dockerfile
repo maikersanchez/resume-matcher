@@ -34,11 +34,11 @@ COPY . .
 RUN echo "--- PASO 5: DESPUÉS DE COPIAR EL CÓDIGO FUENTE ---" && ls -la
 
 # Configurar variables de entorno
-ENV NODE_ENV=development
+ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Exponer el puerto
 EXPOSE 3000
 
 # Comando para iniciar la aplicación
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]
