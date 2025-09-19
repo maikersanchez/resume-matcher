@@ -1,7 +1,9 @@
+# OPCIÓN C: Si usas el build context correcto en Coolify
+# (Build Context: ./frontend en Coolify)
 FROM node:18-alpine
 WORKDIR /app
-COPY frontend/package*.json ./
+COPY package*.json ./
 RUN npm install
-COPY frontend/ ./
+COPY . .
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
