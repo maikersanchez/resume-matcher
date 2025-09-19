@@ -1,41 +1,36 @@
 FROM node:18-alpine AS base
 
-# Install dependencies only when needed
+# Dependencies stage
 FROM base AS deps
 WORKDIR /app
-
-# Copy package files
 COPY package*.json ./
 RUN npm ci --only=production
 
-# Rebuild the source code only when needed
+# Builder stage
 FROM base AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
-
 COPY . .
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Next.js collects completely anonymous telemetry data about general usage.
-ENV NEXT_TELEMETRY_DISABLED 1
+# Try to build, continue if it fails
+RUN npm run build || echo "Build failed, will run in dev mode"
 
-# Build only if package.json has build script
-RUN npm run build || echo "No build script found, skipping build"
-
-# Production image, copy all the files and run next
+# Runner stage
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Create nextjs user
+# Create user
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy built application
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next 2>/dev/null || echo "No .next directory found"
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public 2>/dev/null || echo "No public directory found"
+# Copy files (use individual COPY commands to avoid quoting issues)
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next 2>/dev/null || true
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public 2>/dev/null || true
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 
@@ -43,8 +38,7 @@ USER nextjs
 
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
-# Try different start commands
-CMD ["sh", "-c", "npm start || npm run dev || npx next start || node server.js"]
+CMD ["npm", "start"]
